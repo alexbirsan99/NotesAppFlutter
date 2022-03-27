@@ -64,6 +64,16 @@ class Note {
     );
   }
 
+  factory Note.emptyNote() {
+    return Note(
+      id: null,
+      title: 'Title',
+      description: '',
+      createDate: new DateTime.now().toIso8601String(),
+      modifyDate: new DateTime.now().toIso8601String()
+    );
+  }
+
   factory Note.fromJson(Map<String, dynamic> json) {
     return Note(
       id: json['id'],

@@ -7,14 +7,18 @@ import '../objects/Tag.dart';
 import '../objects/Color.dart';
 
 class SelectTagDialog extends StatefulWidget {
-  Note? _currentNote;
 
-  SelectTagDialog(Note currentNote) {
-    _currentNote = currentNote;
+  var _callBack;
+
+  String? _tagID;
+
+  SelectTagDialog(var callBack, String? tagID) {
+    _tagID = tagID;
+    _callBack = callBack;
   }
 
   @override
-  State<StatefulWidget> createState() => _SelectTagDialog(_currentNote);
+  State<StatefulWidget> createState() => _SelectTagDialog(_callBack, _tagID);
 }
 
 class _SelectTagDialog extends State<SelectTagDialog> {
@@ -26,10 +30,14 @@ class _SelectTagDialog extends State<SelectTagDialog> {
 
   List<ColorApp> colors = [];
 
-  Note? _currentNote;
+  String? _tagID;
 
-  _SelectTagDialog(Note? currentNote) {
-    _currentNote = currentNote;
+
+  var _callBack;
+
+  _SelectTagDialog(var callBack, String? tagID) {
+    _tagID = tagID;
+    _callBack = callBack;
   }
 
   @override
@@ -39,7 +47,7 @@ class _SelectTagDialog extends State<SelectTagDialog> {
     TagsNetwork.getAllTags().then((value) => setState(() {
       _allTags = value;
       for(Tag tag in _allTags) {
-        if(tag.getTagID() == _currentNote!.getTagID()) {
+        if(tag.getTagID() == _tagID) {
           _selectedTag = tag;
         }
       }
@@ -48,7 +56,6 @@ class _SelectTagDialog extends State<SelectTagDialog> {
 
   onTagSelected(var selectedTag) {
     _selectedTag = selectedTag;
-    print(_selectedTag!.getTagID());
     for (_TagColorComponent colorComponent in colorComponents) {
       _TagColorComponentState _colorComponentState = colorComponent._colorComponentState;
       _colorComponentState.setState(() {
@@ -103,8 +110,7 @@ class _SelectTagDialog extends State<SelectTagDialog> {
                           TextButton(
                               onPressed: () {
                                 Navigator.of(context).pop();
-                                _currentNote!
-                                    .setTagID(_selectedTag != null? _selectedTag!.getTagID()! : '');
+                                _callBack(_selectedTag!);
                               },
                               child: Text('Confirm'))
                         ],
@@ -138,6 +144,8 @@ class _TagColorComponentState extends State {
   Tag? _tag, _selectedTag;
   var _callBack;
 
+  Color? _tagColor;
+
   _TagColorComponentState(Tag? tag, var callBack, Tag? selectedTag) {
     _tag = tag;
     _callBack = callBack;
@@ -146,6 +154,7 @@ class _TagColorComponentState extends State {
 
   @override
   Widget build(BuildContext context) {
+    _tag != null && _tagColor == null ? ColorsNetwork.getColor(_tag!.getTagColorID()!).then((value) => setState((() => _tagColor = value.getColor()))) : null;
     return GestureDetector(
       onTap: _callBack != null
           ? () {
@@ -160,9 +169,7 @@ class _TagColorComponentState extends State {
                 height: 30,
                 width: 30,
                 decoration: BoxDecoration(
-                  color:
-                      ColorsNetwork.getColor(_tag!.getTagColorID().toString())
-                          .getColor(),
+                  color:_tagColor,
                   shape: BoxShape.circle,
                 ),
               )),

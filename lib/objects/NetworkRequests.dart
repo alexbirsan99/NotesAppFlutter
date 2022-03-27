@@ -4,8 +4,9 @@ abstract class NetworkRequests {
   static String _baseURLAPI = 'http://10.0.2.2:8000/api/';
 
   static getResult(String arg) async {
-    var result = await http.get(Uri.parse(_baseURLAPI + arg));
-    print(_baseURLAPI + arg);
+    var result = await http.get(Uri.parse(_baseURLAPI + arg)).timeout(Duration(seconds: 2), onTimeout: () {
+      return http.Response('Error', 503);
+    });
     return result;
   }
 

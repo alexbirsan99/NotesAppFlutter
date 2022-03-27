@@ -7,16 +7,23 @@ import 'package:flutter/material.dart';
 
 import 'package:image_picker/image_picker.dart';
 import 'package:notes/UI/SelectTagDialog.dart';
+import 'package:notes/UI/TagChip.dart';
 import 'package:notes/utils/NotesNetwork.dart';
 
 import '../objects/Note.dart';
 
 import 'package:http/http.dart' as http;
 
+import 'package:photo_view/photo_view.dart';
+
+import '../objects/Tag.dart';
+import './PhotoViewer.dart';
+
 class AddNotePage extends StatefulWidget {
-  Note? _note;
+  late Note _note;
   var _updateNoteCallBack;
-  AddNotePage(Note? note, var updateNoteCallBack) {
+
+  AddNotePage(Note note, var updateNoteCallBack) {
     _note = Note.copyNote(note as Note);
     _updateNoteCallBack = updateNoteCallBack;
   }
@@ -24,6 +31,13 @@ class AddNotePage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
     return _AddNotePage(_note, _updateNoteCallBack);
+  }
+}
+
+class _Test extends State<AddNotePage> {
+  @override
+  Widget build(BuildContext context) {
+    return Container();
   }
 }
 
@@ -40,13 +54,13 @@ class _AddNotePage extends State<AddNotePage> {
   TextEditingController noteTitleController = new TextEditingController();
   TextEditingController noteDescriptionController = new TextEditingController();
 
-  _AddNotePage(Note? note, updateNoteCallBack) {
+  _AddNotePage(Note note, updateNoteCallBack) {
     _updateNoteCallBack = updateNoteCallBack;
-    if (note != null) {
-      _note = note;
+    _note = note;
+    if (note.getID() != null) {
       _appBarText = 'Edit note';
     } else {
-      _note = new Note(title: 'My new note');
+      _appBarText = 'New note';
     }
     noteTitleController.text = _note.getTitle() ?? '';
     noteDescriptionController.text = _note.getDescription() ?? '';
@@ -66,20 +80,42 @@ class _AddNotePage extends State<AddNotePage> {
         return Expanded(
             flex: 7,
             child: Container(
-              child: Image.memory(
-                data.contentAsBytes(),
-                fit: BoxFit.fitWidth,
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => PhotoViewer(Image.memory(
+                                data.contentAsBytes(),
+                                fit: BoxFit.fitWidth,
+                              ).image)));
+                },
+                child: Image.memory(
+                  data.contentAsBytes(),
+                  fit: BoxFit.fitWidth,
+                ),
               ),
             ));
-      } else {
-        return Container();
       }
     }
+    return Container(); 
   }
 
   @override
   Widget build(BuildContext context) {
+
+
     return Scaffold(
+
+      /**
+       * key -> the key of the current state
+       * i give a unique key to force the widget to be re-rendered after set state
+       */
+
+      key: UniqueKey(),
+
+
+
       resizeToAvoidBottomInset:
           false, // this is for avoiding resizing the text fields when the keyboard appears
       appBar: AppBar(
@@ -89,7 +125,7 @@ class _AddNotePage extends State<AddNotePage> {
         padding: EdgeInsets.fromLTRB(0, 0, 0, 40),
         child: FloatingActionButton(
           onPressed: () {
-            if(_note.id != null) {
+            if (_note.id != null) {
               NotesNetwork.updateNote(_note);
               _updateNoteCallBack(_note);
               Navigator.pop(context);
@@ -113,8 +149,20 @@ class _AddNotePage extends State<AddNotePage> {
                       border: InputBorder.none, hintText: 'Note title'),
                 ),
               )),
+          _note.getID() != null ? Expanded(
+              flex: 2,
+              child: Container(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(16, 0, 16, 0),
+                  child: TagChip.setFutureTag(_note.getTagID()!)
+                ),
+              )
+          ) : Container(),
           Expanded(
-              flex: 14,
+            flex: 14,
+            child: Container(
+              alignment: Alignment.centerLeft,
               child: Padding(
                 padding: EdgeInsets.fromLTRB(16, 0, 16, 0),
                 child: TextField(
@@ -124,31 +172,39 @@ class _AddNotePage extends State<AddNotePage> {
                   decoration: InputDecoration(
                       border: InputBorder.none, hintText: 'Note content'),
                 ),
-              )),
+              ),
+            ),
+          ),
           Expanded(
               flex: 2,
               child: Row(
                 children: [
                   TextButton(
                       onPressed: () async {
-                        image = await _picker.pickImage(source: ImageSource.gallery);
-                        if(image != null) {
+                        image = await _picker.pickImage(
+                            source: ImageSource.gallery);
+                        if (image != null) {
                           File imageFile = File(image!.path);
                           setState(() {
-                            _note.setImage(base64.encode(imageFile.readAsBytesSync()));
+                            _note.setImage(
+                                base64.encode(imageFile.readAsBytesSync()));
                           });
                         }
-                      }, 
+                      },
                       child: const Icon(Icons.image)),
-                  TextButton(onPressed: () {
-                    showDialog(
-                      context: context, 
-                      builder: (BuildContext context) {
-                        return SelectTagDialog(_note);
-                      }
-                    );
-                  }, 
-                  child: const Icon(Icons.tag))
+                  TextButton(
+                      onPressed: () {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return SelectTagDialog((Tag tag) {
+                                setState(() {
+                                  _note.setTagID(tag.getTagID()!);
+                                });
+                              }, _note.getTagID());
+                            });
+                      },
+                      child: const Icon(Icons.tag))
                 ],
               ))
         ],

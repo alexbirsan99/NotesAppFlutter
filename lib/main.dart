@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:notes/UI/GridNoteUI.dart';
 import 'package:notes/UI/NotesPage.dart';
@@ -63,10 +65,11 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _getNotes() async {
-    NotesNetwork.getAllNotes().then((value) => {
+    NotesNetwork.getAllNotes().then((value) {
       setState(() => {
-        _noteNetworkResult = value
-      })
+        _noteNetworkResult = value,
+        print(_noteNetworkResult)
+      });
     });
   }
 

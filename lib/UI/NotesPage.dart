@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:notes/UI/AddNotePage.dart';
 import 'package:notes/objects/NetworkResult.dart';
@@ -27,8 +29,8 @@ class NotesPage extends StatelessWidget {
         child: GridNoteUI(_noteNetworkResult),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => AddNotePage(null, null)))
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => AddNotePage(Note.emptyNote(), null)));
         },
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.

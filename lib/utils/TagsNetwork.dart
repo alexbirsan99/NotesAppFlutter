@@ -12,7 +12,7 @@ abstract class TagsNetwork {
   static List<Tag> _allTags = [];
 
   static Future<Tag?> getTag(String id) async {
-    var result = await NetworkRequests.getResult('tags=id' + id + '/');
+    var result = await NetworkRequests.getResult('tags/id=' + id + '/');
     Tag? tag;
     if(result.statusCode == 200) {
       var tagJSON = jsonDecode(result.body);

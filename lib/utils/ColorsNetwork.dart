@@ -22,9 +22,13 @@ abstract class ColorsNetwork {
     return _colors;
   }
 
-  static ColorApp getColor(String id) {
+  static Future<ColorApp> getColor(String id) async {
+    if(_colors.length == 0) {
+      await getColors();
+    }
     for(ColorApp color in _colors) {
-      if(color.getID() == id) {
+      var colorID = color.getID()!.replaceAll('-', '');
+      if(colorID == id) {
         return color;
       }
     }

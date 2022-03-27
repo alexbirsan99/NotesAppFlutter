@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:notes/UI/AddNotePage.dart';
+import 'package:notes/UI/TagChip.dart';
 import 'package:notes/objects/Note.dart';
 import 'package:notes/utils/TagsNetwork.dart';
 import 'dart:convert';
@@ -7,7 +8,7 @@ import 'dart:convert';
 import '../objects/Tag.dart';
 
 class NoteUI extends StatefulWidget {
-  Note? note;
+  late Note note;
   NoteUI(this.note);
 
   @override
@@ -17,11 +18,11 @@ class NoteUI extends StatefulWidget {
 }
 
 class _NoteUI extends State<NoteUI> {
-  Note? _note;
+  late Note _note;
 
   Tag? tag;
 
-  _NoteUI(Note? note) {
+  _NoteUI(Note note) {
     _note = note;
   }
 
@@ -54,6 +55,7 @@ class _NoteUI extends State<NoteUI> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      key: UniqueKey(),
       onTap: () => {
         Navigator.push(context,
             MaterialPageRoute(builder: (context) => AddNotePage(_note, (updatedNote) {
@@ -77,6 +79,7 @@ class _NoteUI extends State<NoteUI> {
                     flex: 1,
                     child: Text(_note?.getTitle() ?? ''),
                   ),
+                  _note?.getTagID() != null? TagChip.setFutureTag(_note!.getTagID()!) : Container(),
                   Expanded(flex: 3, child: Text(_note?.getDescription() ?? ''))
                 ],
               ),
